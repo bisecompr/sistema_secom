@@ -312,7 +312,7 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
                       </span>
                       <div style={styles.investment}>
                         {item.spend
-                          ? `R$ ${item.spend.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                          ? `R$ ${item.spend.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                           : "R$ 0,00"}
                       </div>
                     </div>
@@ -361,7 +361,7 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
                     </span>
                     <div style={styles.investment}>
                       {item.spend
-                        ? `R$ ${item.spend.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                        ? `R$ ${item.spend.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         : "R$ 0,00"}
                     </div>
                   </div>
