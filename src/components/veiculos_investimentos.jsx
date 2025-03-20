@@ -137,8 +137,8 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       color: colors.text.primary
     },
     investment: {
-      fontSize: isMobile ? '0.9rem' : '1rem',
-      fontWeight: '500',
+      fontSize: isMobile ? '0.9rem' : '1.2rem',
+      fontWeight: '700',
       color: colors.text.secondary
     },
     metricsContainer: {
@@ -170,14 +170,14 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       flexShrink: 0
     },
     metricLabel: {
-      fontSize: isMobile ? '0.7rem' : '0.8rem',
+      fontSize: isMobile ? '1rem' : '1.1rem',
       fontWeight: '600',
       color: colors.text.secondary,
       marginBottom: '4px'
     },
     metricValue: {
-      fontSize: isMobile ? '0.8rem' : '0.9rem',
-      fontWeight: '500',
+      fontSize: isMobile ? '0.8rem' : '1.1rem',
+      fontWeight: '700',
       color: colors.text.primary,
       whiteSpace: 'nowrap'
     },
