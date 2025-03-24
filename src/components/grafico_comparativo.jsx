@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card } from "react-bootstrap";
+import { Card, Spinner } from "react-bootstrap";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -28,15 +28,21 @@ ChartJS.register(
 const GraficoComparativo = ({ startDate, endDate, selectedCampaign }) => {
   const [metrics, setMetrics] = useState({ actual: [], previous: [] });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadMetrics = async () => {
       setLoading(true);
+      setError(null);
       try {
         const data = await graficoMetrics(startDate, endDate, selectedCampaign);
+        if (!data || !data.actual || !data.previous) {
+          throw new Error("Dados incompletos ou inválidos");
+        }
         setMetrics(data);
       } catch (error) {
         console.error("Erro ao carregar métricas:", error);
+        setError(error.message || "Erro ao carregar dados");
       } finally {
         setLoading(false);
       }
@@ -65,67 +71,109 @@ const GraficoComparativo = ({ startDate, endDate, selectedCampaign }) => {
     return `${dia}-${mes}-${ano}`;
   };
 
+  // Componente de spinner personalizado
+  const LoadingSpinner = () => (
+    <div className="d-flex flex-column justify-content-center align-items-center h-100">
+      <Spinner 
+        animation="border" 
+        variant="danger" 
+        style={{ width: "3rem", height: "3rem" }}
+      />
+      <p className="mt-3 text-muted">Carregando dados do gráfico...</p>
+    </div>
+  );
+
+  // Componente de mensagem de erro
+  const ErrorMessage = ({ message }) => (
+    <div className="d-flex flex-column justify-content-center align-items-center h-100">
+      <div className="text-danger mb-3">
+        <i className="bi bi-exclamation-triangle-fill" style={{ fontSize: "2rem" }}></i>
+      </div>
+      <p className="text-center text-danger">{message}</p>
+      <button 
+        className="btn btn-outline-danger mt-2" 
+        onClick={() => window.location.reload()}
+      >
+        Tentar novamente
+      </button>
+    </div>
+  );
+
+  // Verifica se temos dados válidos para processar
+  if (!loading && (!metrics || !metrics.actual || !metrics.previous)) {
+    return (
+      <Card className="campaign-card p-3 shadow" style={{ height: "500px" }}>
+        <Card.Title className="text-center mb-3 fw-bold">
+          Comparação de Impressões por Período
+        </Card.Title>
+        <ErrorMessage message="Não foi possível carregar os dados do gráfico" />
+      </Card>
+    );
+  }
+
   // Função que, se o item.label for um dia da semana, retorna-o; senão, retorna a data formatada
   const getXValue = (item) =>
     diasSemana.includes(item.label) ? item.label : formatarData(item.date);
 
   // --- Lógica para montar os labels e os dados dos datasets ---
-
   let unionLabels = [];
   let actualData = [];
   let previousData = [];
 
-  if (metrics.actual.length === 7 && metrics.previous.length === 7) {
-    // Caso comparativo: usa getXValue (que pode retornar dias da semana ou datas formatadas)
-    const actualLabelsComparative = metrics.actual.map(getXValue);
-    const previousLabelsComparative = metrics.previous.map(getXValue);
+  // Só processamos os dados se não estivermos carregando e tivermos dados válidos
+  if (!loading && metrics.actual && metrics.previous) {
+    if (metrics.actual.length === 7 && metrics.previous.length === 7) {
+      // Caso comparativo: usa getXValue (que pode retornar dias da semana ou datas formatadas)
+      const actualLabelsComparative = metrics.actual.map(getXValue);
+      const previousLabelsComparative = metrics.previous.map(getXValue);
 
-    // Se os dados atuais forem baseados em dias da semana, preserva a ordem conforme os dados
-    if (metrics.actual.length > 0 && diasSemana.includes(metrics.actual[0].label)) {
-      unionLabels = [...actualLabelsComparative];
-      previousLabelsComparative.forEach((label) => {
-        if (!unionLabels.includes(label)) {
-          unionLabels.push(label);
-        }
+      // Se os dados atuais forem baseados em dias da semana, preserva a ordem conforme os dados
+      if (metrics.actual.length > 0 && diasSemana.includes(metrics.actual[0].label)) {
+        unionLabels = [...actualLabelsComparative];
+        previousLabelsComparative.forEach((label) => {
+          if (!unionLabels.includes(label)) {
+            unionLabels.push(label);
+          }
+        });
+      } else {
+        // Caso sejam datas, une os labels e os ordena cronologicamente
+        const labelsSet = new Set([...actualLabelsComparative, ...previousLabelsComparative]);
+        unionLabels = Array.from(labelsSet);
+        unionLabels.sort((a, b) => {
+          const [diaA, mesA, anoA] = a.split("-").map(Number);
+          const [diaB, mesB, anoB] = b.split("-").map(Number);
+          return new Date(anoA, mesA - 1, diaA) - new Date(anoB, mesB - 1, diaB);
+        });
+      }
+      actualData = unionLabels.map((label) => {
+        const item = metrics.actual.find((item) => getXValue(item) === label);
+        return item ? item.impressions : null;
+      });
+      previousData = unionLabels.map((label) => {
+        const item = metrics.previous.find((item) => getXValue(item) === label);
+        return item ? item.impressions : null;
       });
     } else {
-      // Caso sejam datas, une os labels e os ordena cronologicamente
-      const labelsSet = new Set([...actualLabelsComparative, ...previousLabelsComparative]);
+      // Caso simples: usa somente a data (item.date) formatada para cada dataset
+      const actualSimpleLabels = metrics.actual.map((item) => formatarData(item.date));
+      const previousSimpleLabels = metrics.previous.map((item) => formatarData(item.date));
+
+      const labelsSet = new Set([...actualSimpleLabels, ...previousSimpleLabels]);
       unionLabels = Array.from(labelsSet);
       unionLabels.sort((a, b) => {
         const [diaA, mesA, anoA] = a.split("-").map(Number);
         const [diaB, mesB, anoB] = b.split("-").map(Number);
         return new Date(anoA, mesA - 1, diaA) - new Date(anoB, mesB - 1, diaB);
       });
+      actualData = unionLabels.map((label) => {
+        const item = metrics.actual.find((item) => formatarData(item.date) === label);
+        return item ? item.impressions : null;
+      });
+      previousData = unionLabels.map((label) => {
+        const item = metrics.previous.find((item) => formatarData(item.date) === label);
+        return item ? item.impressions : null;
+      });
     }
-    actualData = unionLabels.map((label) => {
-      const item = metrics.actual.find((item) => getXValue(item) === label);
-      return item ? item.impressions : null;
-    });
-    previousData = unionLabels.map((label) => {
-      const item = metrics.previous.find((item) => getXValue(item) === label);
-      return item ? item.impressions : null;
-    });
-  } else {
-    // Caso simples: usa somente a data (item.date) formatada para cada dataset
-    const actualSimpleLabels = metrics.actual.map((item) => formatarData(item.date));
-    const previousSimpleLabels = metrics.previous.map((item) => formatarData(item.date));
-
-    const labelsSet = new Set([...actualSimpleLabels, ...previousSimpleLabels]);
-    unionLabels = Array.from(labelsSet);
-    unionLabels.sort((a, b) => {
-      const [diaA, mesA, anoA] = a.split("-").map(Number);
-      const [diaB, mesB, anoB] = b.split("-").map(Number);
-      return new Date(anoA, mesA - 1, diaA) - new Date(anoB, mesB - 1, diaB);
-    });
-    actualData = unionLabels.map((label) => {
-      const item = metrics.actual.find((item) => formatarData(item.date) === label);
-      return item ? item.impressions : null;
-    });
-    previousData = unionLabels.map((label) => {
-      const item = metrics.previous.find((item) => formatarData(item.date) === label);
-      return item ? item.impressions : null;
-    });
   }
 
   // Função para calcular tamanhos dinâmicos para pontos e bordas
@@ -159,8 +207,8 @@ const GraficoComparativo = ({ startDate, endDate, selectedCampaign }) => {
         },
         borderWidth: borderWidth + 1,
         pointRadius: pointRadius + 1,
-        pointBackgroundColor: "rgb(255, 0, 0)", // Cor de fundo do ponto (laranja)
-        pointBorderWidth: 2, // Largura da borda do ponto
+        pointBackgroundColor: "rgb(255, 0, 0)", 
+        pointBorderWidth: 2,
         fill: true,
         tension: 0.4,
         order: 2
@@ -185,8 +233,8 @@ const GraficoComparativo = ({ startDate, endDate, selectedCampaign }) => {
         },
         borderWidth: borderWidth + 1,
         pointRadius: pointRadius + 1,
-        pointBackgroundColor: "rgba(255, 208, 0, 0.8)", // Cor de fundo do ponto (azul)
-        pointBorderWidth: 2, // Largura da borda do ponto (igual à laranja)
+        pointBackgroundColor: "rgba(255, 208, 0, 0.8)",
+        pointBorderWidth: 2,
         fill: true,
         tension: 0.4,
         order: 1
@@ -236,7 +284,9 @@ const GraficoComparativo = ({ startDate, endDate, selectedCampaign }) => {
         Comparação de Impressões por Período
       </Card.Title>
       {loading ? (
-        <p className="text-center">Carregando...</p>
+        <LoadingSpinner />
+      ) : error ? (
+        <ErrorMessage message={error} />
       ) : (
         <div className="w-100 h-100">
           <Line options={options} data={chartData} />
