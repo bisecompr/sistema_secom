@@ -185,7 +185,7 @@ function Cards({ startDate, endDate, selectedCampaign }) {
                     <div className="d-flex flex-column">
                       <div 
                         style={{ 
-                          fontSize: '32px', 
+                          fontSize: '1.7rem', 
                           fontWeight: '700',
                           color: '#1E293B',
                           lineHeight: '1.2'

@@ -8,7 +8,6 @@ import youtubeLogo from "../assets/youtube-logo.png";
 import gdnLogo from "../assets/gdn-logo.png";
 
 const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
-  // Importação da fonte Rawline
   const fontLink = document.createElement('link');
   fontLink.href = 'https://fonts.googleapis.com/css2?family=Rawline:wght@300;400;600;700&display=swap';
   fontLink.rel = 'stylesheet';
@@ -18,7 +17,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
   const [loading, setLoading] = useState(true);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Paleta de cores
   const colors = {
     primary: '#00D000',
     secondary: '#1E293B',
@@ -43,7 +41,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
     }
   };
 
-  // Monitora redimensionamentos de tela
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -55,9 +52,20 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
     };
   }, []);
 
-  // Define o layout com base no tamanho da tela
   const isMobile = windowWidth < 768;
   const isTablet = windowWidth >= 768 && windowWidth < 992;
+
+  // Função para calcular o tamanho da fonte dinamicamente
+  const calculateFontSize = () => {
+    const baseFontSize = isMobile ? 0.9 : 1.1; // Tamanho base em rem
+    const minFontSize = 0.6; // Tamanho mínimo em rem
+    const maxWidthPerMetric = windowWidth / 5; // 5 métricas no total (CPM, CPV, CPC, CTR, VTR)
+    const idealWidthPerMetric = isMobile ? 60 : isTablet ? 65 : 70; // Largura ideal por métrica
+    const scaleFactor = Math.min(1, maxWidthPerMetric / idealWidthPerMetric); // Fator de escala baseado na largura disponível
+    return Math.max(minFontSize, baseFontSize * scaleFactor); // Garante que não fique menor que o mínimo
+  };
+
+  const fontSize = calculateFontSize();
 
   const styles = {
     card: {
@@ -70,7 +78,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       display: 'flex',
       flexDirection: 'column',
       background: 'linear-gradient(to bottom, white, #F8FAFC)',
-      transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
     },
     header: {
       marginBottom: isMobile ? '12px' : '20px',
@@ -99,7 +106,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
       position: 'relative',
       overflow: 'hidden',
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       border: `1px solid ${colors.border}`
     },
     platformHeader: {
@@ -107,7 +113,7 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       flexDirection: isMobile ? 'column' : 'row',
       alignItems: isMobile ? 'flex-start' : 'center',
       width: '100%',
-      gap: '10px',
+      gap: isMobile ? '10px' : '15px',
       position: 'relative',
       zIndex: 1
     },
@@ -124,10 +130,10 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       alignItems: 'center',
       justifyContent: 'center',
       fontSize: '24px',
-      marginRight: '10px'
+      marginRight: isMobile ? '8px' : '10px'
     },
     platformInfo: {
-      width: isMobile ? 'calc(100% - 40px)' : '150px',
+      width: isMobile ? 'auto' : '150px',
       marginRight: isMobile ? 0 : '20px'
     },
     platformName: {
@@ -143,43 +149,39 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
     },
     metricsContainer: {
       display: 'flex',
-      justifyContent: 'space-between',
       flex: 1,
       border: `1px solid ${colors.border}`,
       borderRadius: '8px',
-      padding: isMobile ? '8px 5px' : '10px',
+      padding: isMobile ? '8px 12px' : '10px 14px',
       backgroundColor: colors.lightBg,
-      transition: 'all 0.2s ease',
-      width: isMobile ? '100%' : 'auto',
-      overflowX: isMobile ? 'auto' : 'visible'
+      width: '100%',
+      justifyContent: 'center', // Centraliza o conteúdo interno
     },
     metrics: {
       display: 'flex',
-      justifyContent: isMobile ? 'flex-start' : 'space-between',
-      gap: isMobile ? '10px' : '15px',
-      width: '100%',
-      minWidth: isMobile ? '400px' : 'auto'
+      justifyContent: 'center', // Sempre centralizado
+      gap: isMobile ? '8px' : isTablet ? '12px' : '16px', // Gap reduzido para caber melhor
+      width: '100%', // Usa toda a largura disponível
     },
     metricItem: {
-      width: isMobile ? '60px' : '55px',
+      flex: '1 1 0', // Permite que os itens se ajustem igualmente ao espaço disponível
+      minWidth: 0, // Evita que o minWidth fixo interfira
       textAlign: 'center',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: 0,
-      flexShrink: 0
+      padding: '0 4px',
     },
     metricLabel: {
-      fontSize: isMobile ? '1rem' : '1.2rem',
+      fontSize: `${fontSize}rem`, // Tamanho dinâmico
       fontWeight: '600',
       color: colors.text.secondary,
       marginBottom: '4px'
     },
     metricValue: {
-      fontSize: isMobile ? '0.8rem' : '1.2rem',
+      fontSize: `${fontSize}rem`, // Tamanho dinâmico
       fontWeight: '700',
       color: colors.text.primary,
-      whiteSpace: 'nowrap'
     },
     loadingContainer: {
       display: 'flex',
@@ -191,6 +193,13 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
     spinner: {
       color: colors.primary
     },
+    progressBar: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      height: '4px',
+      backgroundColor: colors.primary,
+    }
   };
 
   useEffect(() => {
@@ -199,7 +208,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       try {
         const result = await fetchPlatformMetrics(startDate, endDate, selectedCampaign);
         
-        // Lista de todas as plataformas que devem ser exibidas
         const allPlatforms = [
           { platform: "Instagram", spend: 0, CPM: 0, CPV: 0, CPC: 0, CTR: 0, VTR: 0, impressions: 0 },
           { platform: "Facebook", spend: 0, CPM: 0, CPV: 0, CPC: 0, CTR: 0, VTR: 0, impressions: 0 },
@@ -212,7 +220,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
           { platform: "Google GDN", spend: 0, CPM: 0, CPV: 0, CPC: 0, CTR: 0, VTR: 0, impressions: 0 },
         ];
 
-        // Mescla os dados retornados com a lista de todas as plataformas
         const mergedMetrics = allPlatforms.map(platform => {
           const found = result.find(item => item.platform.toLowerCase() === platform.platform.toLowerCase());
           return found ? found : platform;
@@ -278,28 +285,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
           <div 
             key={index} 
             style={styles.platformRow}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-              
-              // Adiciona hover no contêiner de métricas
-              const metricsContainer = e.currentTarget.querySelector('[data-metrics-container]');
-              if (metricsContainer) {
-                metricsContainer.style.borderColor = 'blue';
-                metricsContainer.style.backgroundColor = 'white';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
-              
-              // Remove hover no contêiner de métricas
-              const metricsContainer = e.currentTarget.querySelector('[data-metrics-container]');
-              if (metricsContainer) {
-                metricsContainer.style.borderColor = colors.border;
-                metricsContainer.style.backgroundColor = colors.lightBg;
-              }
-            }}
           >
             <div style={styles.platformHeader}>
               {isMobile ? (

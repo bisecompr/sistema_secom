@@ -18,7 +18,8 @@ const CardCampanha = ({
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth); // Adicionado para responsividade
+
   // Paleta de cores
   const colors = {
     primary: '#00D000',
@@ -34,6 +35,28 @@ const CardCampanha = ({
       light: '#94A3B8'
     }
   };
+
+  // Monitoramento da largura da janela para responsividade
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Função para calcular o tamanho da fonte da badge dinamicamente
+  const calculateBadgeFontSize = () => {
+    const baseFontSize = 0.7; // Tamanho base em rem
+    const minFontSize = 0.5; // Tamanho mínimo em rem
+    const scaleFactor = Math.min(1, windowWidth / 1440); // Escala com base em uma largura de referência (1440px)
+    return Math.max(minFontSize, baseFontSize * scaleFactor); // Garante que não fique menor que o mínimo
+  };
+
+  const badgeFontSize = calculateBadgeFontSize();
 
   const styles = {
     card: {
@@ -55,7 +78,9 @@ const CardCampanha = ({
       borderBottom: `1px solid ${colors.border}`,
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center'
+      alignItems: 'center',
+      flexWrap: 'wrap', // Permite que a badge quebre para a próxima linha se necessário
+      gap: '8px', // Espaço entre título e badge
     },
     title: {
       fontSize: '1rem',
@@ -65,13 +90,16 @@ const CardCampanha = ({
     },
     badge: {
       backgroundColor: colors.primary,
-      padding: '4px 8px',
+      padding: windowWidth < 768 ? '2px 6px' : '4px 8px', // Padding responsivo
       borderRadius: '20px',
-      fontSize: '0.7rem',
+      fontSize: `${badgeFontSize}rem`, // Tamanho da fonte dinâmico
       fontWeight: '600',
       color: 'white',
-      display: 'inline-block',
-      alignSelf: 'center'
+      display: 'inline-flex', // Melhor controle sobre o tamanho
+      alignItems: 'center',
+      justifyContent: 'center',
+      whiteSpace: 'nowrap', // Impede quebra de linha no texto da badge
+      maxWidth: '100%', // Garante que não exceda o contêiner
     },
     campaignsList: {
       display: 'flex',
@@ -92,7 +120,7 @@ const CardCampanha = ({
       border: `1px solid transparent`,
       transition: 'all 0.2s ease',
       backgroundColor: 'white',
-      minHeight: '60px' // Garante altura mínima para acomodar múltiplas linhas
+      minHeight: '60px'
     },
     selectedCampaign: {
       backgroundColor: `${colors.primary}40`,
@@ -116,10 +144,10 @@ const CardCampanha = ({
       wordBreak: 'break-word',
       whiteSpace: 'normal',
       overflow: 'visible',
-      display: 'block', // Garante que o texto seja tratado como bloco
-      maxWidth: '100%',  // Importante para evitar que o texto exceda a largura
-      textOverflow: 'clip', // Garante que não haja elipse
-      hyphens: 'auto',  // Permite hifenização automática para palavras longas
+      display: 'block',
+      maxWidth: '100%',
+      textOverflow: 'clip',
+      hyphens: 'auto',
       WebkitHyphens: 'auto',
       MozHyphens: 'auto',
       msHyphens: 'auto'
@@ -153,25 +181,20 @@ const CardCampanha = ({
     setLoading(true);
     setError(null);
     try {
-      // Busca a lista de campanhas
       const data = await fetchCampaigns(startDate, endDate);
       
-      // Define a data de ontem com base no endDate
       const yesterday = new Date(endDate);
       yesterday.setDate(yesterday.getDate() - 1);
   
-      // Para cada campanha, busca os dados de métricas e verifica se ontem teve impressões
       const campaignsWithStatus = await Promise.all(
         data.map(async (campaign) => {
           const metrics = await graficoMetrics(startDate, endDate, campaign.Nome_Interno_Campanha);
           
-          // Procura o registro de ontem na array "actual"
           const yesterdayMetric = metrics.actual.find(item => {
             const metricDate = new Date(item.date);
             return metricDate.toDateString() === yesterday.toDateString();
           });
           
-          // Considera ativa se houver registro de ontem e impressões maiores que zero
           const isActive = yesterdayMetric && yesterdayMetric.impressions > 0;
           
           return {
@@ -198,7 +221,6 @@ const CardCampanha = ({
     onCampaignSelect(campaignName === selectedCampaign ? null : campaignName);
   };
 
-  // Renderiza o nome da campanha com quebra de linha
   const renderCampaignName = (name) => {
     return (
       <div style={styles.campaignName}>
@@ -235,9 +257,7 @@ const CardCampanha = ({
               {campaigns.map((campaign) => {
                 const isSelected = selectedCampaign === campaign.Nome_Interno_Campanha;
                 
-                // Se a campanha não teve métricas (isActive false), usa cinza sem borda; caso contrário, mantém as cores originais.
                 const dotColor = campaign.isActive ? (isSelected ? colors.selected : colors.primary) : "#afafaf";
-                // Apenas define boxShadow se a campanha estiver ativa
                 const dotStyle = campaign.isActive 
                   ? { 
                       ...styles.statusDot,
@@ -247,7 +267,7 @@ const CardCampanha = ({
                   : {
                       ...styles.statusDot, 
                       backgroundColor: dotColor,
-                      boxShadow: 'none' // Remove a borda para campanhas inativas
+                      boxShadow: 'none'
                     };
 
                 return (
@@ -260,8 +280,6 @@ const CardCampanha = ({
                     }}
                   >
                     <span style={dotStyle}></span>
-                    
-                    {/* Usando uma div para o nome da campanha em vez de span */}
                     {renderCampaignName(campaign.Nome_Interno_Campanha)}
                   </div>
                 );
