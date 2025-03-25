@@ -9,14 +9,36 @@ import GraficoComparativo from "../components/grafico_comparativo";
 
 const Campanhas_ativas = () => {
   const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
-
   const [startDate, setStartDate] = useState(format(subDays(new Date(), 7), "yyyy-MM-dd"));
   const [endDate, setEndDate] = useState(yesterday);
   const [tempStartDate, setTempStartDate] = useState(startDate);
   const [tempEndDate, setTempEndDate] = useState(endDate);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
-  const [isFirstLoad, setIsFirstLoad] = useState(true); // Controla se é a primeira carga
-  const [hasError, setHasError] = useState(false); // Controla se houve erro na primeira carga
+  const [loading, setLoading] = useState(true); // Estado de carregamento
+  const [error, setError] = useState(null); // Estado de erro
+
+  // Função para buscar dados iniciais (simulada aqui, substitua pela sua API)
+  const fetchInitialData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Exemplo: substitua por sua chamada real à API
+      // const response = await fetch(`/api/campanhas?start=${startDate}&end=${endDate}`);
+      // const data = await response.json();
+      // if (!data || data.length === 0) throw new Error("Sem dados retornados");
+      console.log("Dados buscados com sucesso para:", { startDate, endDate });
+    } catch (err) {
+      console.error("Erro ao buscar dados:", err);
+      setError("Erro ao carregar os dados. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carrega os dados na montagem inicial e quando as datas mudam
+  useEffect(() => {
+    fetchInitialData();
+  }, [startDate, endDate]);
 
   const handleStartDateChange = (e) => {
     setTempStartDate(e.target.value);
@@ -30,35 +52,21 @@ const Campanhas_ativas = () => {
     const newEndDate = tempEndDate > yesterday ? yesterday : tempEndDate;
     setStartDate(tempStartDate);
     setEndDate(newEndDate);
-    setIsFirstLoad(false); // Desativa a lógica de primeira carga após atualização manual
-    setHasError(false); // Reseta o estado de erro
   };
 
-  // Função para recarregar a página
-  const reloadPage = () => {
-    console.log("Erro na primeira requisição, recarregando a página...");
-    window.location.reload();
-  };
+  // Renderização condicional baseada no estado
+  if (loading) {
+    return <div>Carregando...</div>;
+  }
 
-  // useEffect para monitorar erro na primeira carga
-  useEffect(() => {
-    if (isFirstLoad && hasError) {
-      reloadPage();
-    }
-  }, [isFirstLoad, hasError]);
-
-  // Função para verificar os dados carregados
-  const handleDataLoaded = (data, error = false) => {
-    if (isFirstLoad) {
-      if (error || !data || (Array.isArray(data) && data.length === 0) || (typeof data === "object" && Object.keys(data).length === 0)) {
-        console.log("Falha na primeira requisição:", { data, error });
-        setHasError(true); // Define erro se os dados forem inválidos ou houver falha
-      } else {
-        console.log("Dados carregados com sucesso na primeira requisição:", data);
-        setIsFirstLoad(false); // Desativa a lógica de primeira carga se os dados forem válidos
-      }
-    }
-  };
+  if (error) {
+    return (
+      <div>
+        <p>{error}</p>
+        <Button onClick={fetchInitialData}>Tentar novamente</Button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -70,13 +78,12 @@ const Campanhas_ativas = () => {
               fontWeight: "600",
               margin: 0,
               flex: "1",
-              textAlign: "center"
+              textAlign: "center",
             }}
             className="mb-3 mb-md-0"
           >
             CAMPANHAS ATIVAS
           </h1>
-
           <div className="d-flex flex-column flex-sm-row gap-2 justify-content-end align-items-center" style={{ minWidth: "280px" }}>
             <input
               type="date"
@@ -85,12 +92,7 @@ const Campanhas_ativas = () => {
               onChange={handleStartDateChange}
               max={yesterday}
               className="p-2 w-100 w-sm-auto"
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: "4px",
-                width: "auto",
-                minWidth: "130px"
-              }}
+              style={{ border: "1px solid #e5e7eb", borderRadius: "4px", minWidth: "130px" }}
             />
             <input
               type="date"
@@ -98,12 +100,7 @@ const Campanhas_ativas = () => {
               value={tempEndDate}
               onChange={handleEndDateChange}
               className="p-2 w-100 w-sm-auto"
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: "4px",
-                width: "auto",
-                minWidth: "130px"
-              }}
+              style={{ border: "1px solid #e5e7eb", borderRadius: "4px", minWidth: "130px" }}
             />
             <Button
               onClick={handleDateChange}
@@ -116,27 +113,25 @@ const Campanhas_ativas = () => {
         </div>
       </div>
 
-      <Cards startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} onDataLoaded={handleDataLoaded} />
+      <Cards startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
       <br />
-
       <Row className="g-4">
         <Col xs={12} md={6} lg={2} className="d-flex align-items-stretch">
-          <CardCampanha 
-            startDate={startDate} 
-            endDate={endDate} 
-            onCampaignSelect={setSelectedCampaign} 
-            selectedCampaign={selectedCampaign} 
-            onDataLoaded={handleDataLoaded}
+          <CardCampanha
+            startDate={startDate}
+            endDate={endDate}
+            onCampaignSelect={setSelectedCampaign}
+            selectedCampaign={selectedCampaign}
           />
         </Col>
         <Col xs={12} md={6} lg={6}>
-          <Veiculos_investimentos startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} onDataLoaded={handleDataLoaded} />
+          <Veiculos_investimentos startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
         <Col xs={12} lg={4}>
-          <Engajamento startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} onDataLoaded={handleDataLoaded} />
+          <Engajamento startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
         <Col xs={12} lg={12}>
-          <GraficoComparativo startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} onDataLoaded={handleDataLoaded} />
+          <GraficoComparativo startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
       </Row>
       <br />
