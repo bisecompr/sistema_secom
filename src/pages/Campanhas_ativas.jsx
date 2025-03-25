@@ -124,10 +124,10 @@ const Campanhas_ativas = () => {
             selectedCampaign={selectedCampaign}
           />
         </Col>
-        <Col xs={12} md={6} lg={6}>
+        <Col xs={12} md={6} lg={8}>
           <Veiculos_investimentos startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
-        <Col xs={12} lg={4}>
+        <Col xs={12} lg={2}>
           <Engajamento startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
         <Col xs={12} lg={12}>
