@@ -57,7 +57,7 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
 
   // Função para calcular o tamanho da fonte dinamicamente
   const calculateFontSize = () => {
-    const baseFontSize = isMobile ? 0.8 : 1.1; // Reduzido em mobile para melhor ajuste
+    const baseFontSize = isMobile ? 0.8 : 1.1;
     const minFontSize = 0.6;
     const maxWidthPerMetric = windowWidth / 5;
     const idealWidthPerMetric = isMobile ? 60 : isTablet ? 65 : 70;
@@ -152,22 +152,22 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       flex: 1,
       border: `1px solid ${colors.border}`,
       borderRadius: '8px',
-      padding: isMobile ? '8px' : '10px 14px',
+      padding: isMobile ? '8px' : '10px 36px', // Aumentado de 14px para 24px no desktop/tablet
       backgroundColor: colors.lightBg,
       width: '100%',
-      overflowX: isMobile ? 'auto' : 'hidden', // Scroll horizontal apenas em mobile
-      whiteSpace: isMobile ? 'nowrap' : 'normal', // Impede quebra de linha em mobile
+      overflowX: isMobile ? 'auto' : 'hidden',
+      whiteSpace: isMobile ? 'nowrap' : 'normal',
     },
     metrics: {
       display: 'flex',
       flexDirection: 'row',
       gap: isMobile ? '12px' : isTablet ? '12px' : '16px',
-      width: isMobile ? 'max-content' : '100%', // Largura mínima para scroll em mobile
+      width: isMobile ? 'max-content' : '100%',
       justifyContent: isMobile ? 'flex-start' : 'center',
     },
     metricItem: {
-      flex: isMobile ? '0 0 auto' : '1 1 0', // Em mobile, largura fixa; em desktop, flexível
-      minWidth: isMobile ? '60px' : 0, // Largura mínima em mobile para garantir visibilidade
+      flex: isMobile ? '0 0 auto' : '1 1 0',
+      minWidth: isMobile ? '60px' : 0,
       textAlign: 'center',
       display: 'flex',
       flexDirection: 'column',
