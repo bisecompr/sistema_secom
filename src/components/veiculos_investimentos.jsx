@@ -55,7 +55,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
   const isMobile = windowWidth < 768;
   const isTablet = windowWidth >= 768 && windowWidth < 992;
 
-  // Função para calcular o tamanho da fonte dinamicamente
   const calculateFontSize = () => {
     const baseFontSize = isMobile ? 0.8 : 1.1;
     const minFontSize = 0.6;
@@ -152,7 +151,7 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       flex: 1,
       border: `1px solid ${colors.border}`,
       borderRadius: '8px',
-      padding: isMobile ? '8px' : '10px 36px', // Aumentado de 14px para 24px no desktop/tablet
+      padding: isMobile ? '8px' : '10px 36px',
       backgroundColor: colors.lightBg,
       width: '100%',
       overflowX: isMobile ? 'auto' : 'hidden',
@@ -194,13 +193,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
     },
     spinner: {
       color: colors.primary
-    },
-    progressBar: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      height: '4px',
-      backgroundColor: colors.primary,
     }
   };
 
@@ -251,13 +243,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       case "google gdn": return <img src={gdnLogo} alt="GDN Logo" width="24" height="24" />;
       default: return null;
     }
-  };
-
-  const calculateProgress = (platform) => {
-    if (platform.spend && platform.impressions) {
-      return Math.min(100, (platform.spend / platform.impressions) * 100);
-    }
-    return 0;
   };
 
   if (loading) {
@@ -389,12 +374,6 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
                 </>
               )}
             </div>
-            <div 
-              style={{
-                ...styles.progressBar,
-                width: `${calculateProgress(item)}%`
-              }}
-            ></div>
           </div>
         ))}
       </div>
