@@ -14,6 +14,7 @@ import Login from "../pages/login";
 import Cadastro from "../pages/Cadastro";
 import Stilingue from "../pages/AnaliseStilingue";
 import Demografico from "../pages/Demografico";
+import Comparativo_Historico from "../pages/Comparativo_Historico";
 
 const Routers = () => {
   return (
@@ -27,6 +28,9 @@ const Routers = () => {
           </Route>
           <Route path="/campanhas_ativas" element={<PrivateRoute />} >
             <Route path="/campanhas_ativas" element={<Campanhas_ativas />} />
+          </Route>
+          <Route path="/comparativo_historico" element={<PrivateRoute />} >
+            <Route path="/comparativo_historico" element={<Comparativo_Historico />} />
           </Route>
           <Route path="/trends" element={<PrivateRoute />} >
             <Route path="/trends" element={<Trends />} />

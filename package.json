@@ -9,6 +9,7 @@
     "chart.js": "^4.4.7",
     "cra-template": "1.2.0",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.6.3",
     "lucide-react": "^0.473.0",
     "newsapi": "^2.4.1",
     "querystring-es3": "^0.2.1",
