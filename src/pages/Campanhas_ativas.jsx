@@ -57,7 +57,7 @@ const Campanhas_ativas = () => {
         setAutoRetrying(true)
         setTimeout(() => {
           setRetryCount((prev) => prev + 1)
-        }, 3000) // Tenta novamente após 3 segundos
+        }, 5000) // Tenta novamente após 3 segundos
       } else {
         setError("Não foi possível carregar os dados após várias tentativas. Por favor, tente novamente manualmente.")
       }

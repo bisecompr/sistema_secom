@@ -9,6 +9,7 @@ import Campanhas_ativas from "../pages/Campanhas_ativas";
 import Menu_direcionamento from "../pages/menu_direcionamento";
 import Trends from "../pages/Trends";
 import Powerbi from "../pages/Powerbi";
+import Performance from "../pages/Performance";
 import Demandas from "../pages/Demandas";
 import Login from "../pages/login";
 import Cadastro from "../pages/Cadastro";
@@ -37,6 +38,9 @@ const Routers = () => {
           </Route>
           <Route path="/powerbi" element={<PrivateRoute />} >
             <Route path="/powerbi" element={<Powerbi />} />
+          </Route>
+          <Route path="/performance" element={<PrivateRoute />} >
+            <Route path="/performance" element={<Performance />} />
           </Route>
           <Route path="/demandas" element={<PrivateRoute />} >
             <Route path="/demandas" element={<Demandas />} />
