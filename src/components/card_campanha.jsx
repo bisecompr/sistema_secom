@@ -18,7 +18,7 @@ const CardCampanha = ({
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth); // Adicionado para responsividade
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // Paleta de cores
   const colors = {
@@ -120,7 +120,10 @@ const CardCampanha = ({
       border: `1px solid transparent`,
       transition: 'all 0.2s ease',
       backgroundColor: 'white',
-      minHeight: '60px'
+      minHeight: '60px',
+      position: 'relative', // Necessário para posicionamento absoluto dos elementos internos
+      overflow: 'visible', // Permite que o conteúdo seja visível mesmo se ultrapassar os limites
+      width: '100%' // Garante que ocupe toda a largura disponível
     },
     selectedCampaign: {
       backgroundColor: `${colors.primary}40`,
@@ -133,7 +136,9 @@ const CardCampanha = ({
       backgroundColor: colors.primary,
       flexShrink: 0,
       boxShadow: '0 0 0 2px rgba(0, 208, 0, 0.2)',
-      marginTop: '4px'
+      marginTop: '4px',
+      position: 'relative', // Mantém a posição em relação ao fluxo normal
+      zIndex: 2 // Acima da área clicável
     },
     campaignName: {
       flex: 1,
@@ -145,12 +150,18 @@ const CardCampanha = ({
       whiteSpace: 'normal',
       overflow: 'visible',
       display: 'block',
-      maxWidth: '100%',
-      textOverflow: 'clip',
-      hyphens: 'auto',
-      WebkitHyphens: 'auto',
-      MozHyphens: 'auto',
-      msHyphens: 'auto'
+      width: '100%', // Ocupa toda a largura disponível
+      position: 'relative', // Para que fique acima da área clicável
+      zIndex: 2, // Acima da área clicável para garantir interatividade
+      marginBottom: '0' // Remove margem inferior
+    },
+    campaignItemContent: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: 'calc(100% - 24px)', // Garante espaço para o status dot
+      overflow: 'visible', // Permite que o texto apareça completo
+      position: 'relative', // Para posicionamento correto
+      zIndex: 2 // Acima da área clicável
     },
     errorMessage: {
       padding: '16px',
@@ -174,6 +185,18 @@ const CardCampanha = ({
       color: colors.primary,
       width: '3rem',
       height: '3rem'
+    },
+    // Área clicável que cobre todo o item
+    campaignItemClickable: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: '100%', // Garante que cubra toda a largura
+      height: '100%', // Garante que cubra toda a altura
+      zIndex: 1,
+      cursor: 'pointer'
     }
   };
 
@@ -229,6 +252,24 @@ const CardCampanha = ({
     );
   };
 
+  // Função para calcular a altura dinâmica do item com base no conteúdo
+  const getItemHeight = (name) => {
+    // Base height for all items
+    const baseHeight = 60; 
+    
+    // Estimativa de caracteres por linha (ajuste conforme necessário)
+    const charsPerLine = 20;
+    
+    // Comprimento do nome / caracteres por linha = número estimado de linhas
+    const estimatedLines = name ? Math.ceil(name.length / charsPerLine) : 1;
+    
+    // Altura por linha (baseada no line-height e font-size)
+    const lineHeight = 20; // 14px font-size * 1.4 line-height ≈ 20px
+    
+    // Altura total: base + linhas adicionais * altura da linha + padding
+    return Math.max(baseHeight, lineHeight * estimatedLines + 24); // 24px for padding (12px top + 12px bottom)
+  };
+
   return (
     <Card style={styles.card}>
       <div style={styles.header}>
@@ -269,18 +310,27 @@ const CardCampanha = ({
                       backgroundColor: dotColor,
                       boxShadow: 'none'
                     };
+                
+                // Calcula altura dinâmica com base no nome da campanha
+                const dynamicHeight = getItemHeight(campaign.Nome_Interno_Campanha);
 
                 return (
                   <div 
                     key={campaign.Nome_Interno_Campanha}
-                    onClick={() => handleCampaignSelect(campaign.Nome_Interno_Campanha)}
                     style={{
                       ...styles.campaignItem,
-                      ...(isSelected ? styles.selectedCampaign : {})
+                      ...(isSelected ? styles.selectedCampaign : {}),
+                      minHeight: `${dynamicHeight}px` // Altura dinâmica baseada no conteúdo
                     }}
+                    onClick={() => handleCampaignSelect(campaign.Nome_Interno_Campanha)}
                   >
+                    {/* Status dot */}
                     <span style={dotStyle}></span>
-                    {renderCampaignName(campaign.Nome_Interno_Campanha)}
+                    
+                    {/* Campaign name content */}
+                    <div style={styles.campaignItemContent}>
+                      {renderCampaignName(campaign.Nome_Interno_Campanha)}
+                    </div>
                   </div>
                 );
               })}

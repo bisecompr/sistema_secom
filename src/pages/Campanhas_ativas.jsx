@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Cards from "../components/card";
 import CardCampanha from "../components/card_campanha";
 import { Col, Row, Button } from "react-bootstrap";
@@ -14,129 +14,28 @@ const Campanhas_ativas = () => {
   const [tempStartDate, setTempStartDate] = useState(startDate);
   const [tempEndDate, setTempEndDate] = useState(endDate);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // Dados carregados para cada componente
-  const [componentData, setComponentData] = useState({
-    cards: null,
-    cardCampanha: null,
-    veiculos: null,
-    engajamento: null,
-    grafico: null
-  });
-  
-  // Referências para verificar se os componentes foram montados
-  const componentsRef = useRef({
-    cards: false,
-    cardCampanha: false,
-    veiculos: false,
-    engajamento: false,
-    grafico: false
-  });
-  
-  // Contador de tentativas e flag para reload forçado
-  const retryCountRef = useRef(0);
-  const forceReloadRef = useRef(false);
-  
-  // Função para buscar dados com verificação de dados vazios
-  const fetchData = async () => {
+  const [loading, setLoading] = useState(true); // Estado de carregamento
+  const [error, setError] = useState(null); // Estado de erro
+
+  // Função para buscar dados iniciais (simulada aqui, substitua pela sua API)
+  const fetchInitialData = async () => {
     setLoading(true);
     setError(null);
-    
     try {
-      // Simulação da sua API - substitua por suas chamadas reais
-      console.log("Buscando dados para:", { startDate, endDate });
-      
-      // Aqui você faria suas chamadas de API reais
-      // Este é apenas um placeholder que simula o recebimento de dados
-      const mockData = {
-        cards: { data: ["dados simulados para cards"] },
-        cardCampanha: { data: ["dados simulados para cardCampanha"] },
-        veiculos: { data: ["dados simulados para veiculos"] },
-        engajamento: { data: ["dados simulados para engajamento"] },
-        grafico: { data: ["dados simulados para grafico"] }
-      };
-      
-      // Simular um pequeno atraso para simular a chamada de rede
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Atualizar os dados de cada componente
-      setComponentData(mockData);
-      
-      // Resetar contador de tentativas
-      retryCountRef.current = 0;
-      forceReloadRef.current = false;
+      console.log("Dados buscados com sucesso para:", { startDate, endDate });
     } catch (err) {
       console.error("Erro ao buscar dados:", err);
       setError("Erro ao carregar os dados. Tente novamente.");
-      
-      // Incrementar contador de tentativas
-      retryCountRef.current += 1;
     } finally {
       setLoading(false);
     }
   };
-  
-  // Hook para verificar se algum componente está sendo renderizado com dados em branco
+
+  // Carrega os dados na montagem inicial e quando as datas mudam
   useEffect(() => {
-    // Verificar se dados em branco após um intervalo
-    const checkBlankData = setTimeout(() => {
-      if (!loading && !error) {
-        // Verificar se algum componente que deveria ter dados está com dados vazios
-        const hasBlankData = Object.entries(componentsRef.current).some(
-          ([key, isMounted]) => isMounted && !componentData[key]
-        );
-        
-        if (hasBlankData && retryCountRef.current < 3) {
-          console.log("Detectados dados em branco, tentando recarregar...");
-          retryCountRef.current += 1;
-          forceReloadRef.current = true;
-          fetchData();
-        }
-      }
-    }, 2000); // Verifica 2 segundos após o carregamento
-    
-    return () => clearTimeout(checkBlankData);
-  }, [loading, error, componentData]);
-  
-  // Carregar dados iniciais e quando as datas mudam
-  useEffect(() => {
-    fetchData();
+    fetchInitialData();
   }, [startDate, endDate]);
-  
-  // Registrar quando os componentes são montados
-  useEffect(() => {
-    // Função para registrar componentes montados e verificar seus dados
-    const registerComponent = (componentName) => {
-      componentsRef.current[componentName] = true;
-    };
-    
-    // Registrar que todos os componentes estão sendo montados
-    registerComponent('cards');
-    registerComponent('cardCampanha');
-    registerComponent('veiculos');
-    registerComponent('engajamento');
-    registerComponent('grafico');
-    
-    // Verificar periodicamente se algum componente não está recebendo dados
-    const intervalId = setInterval(() => {
-      const anyComponentMissingData = Object.entries(componentsRef.current).some(
-        ([key, isMounted]) => isMounted && !componentData[key] && !loading
-      );
-      
-      if (anyComponentMissingData && !forceReloadRef.current && retryCountRef.current < 3) {
-        console.log("Componente com dados ausentes detectado, recarregando...");
-        forceReloadRef.current = true;
-        fetchData();
-      }
-    }, 3000); // Verificar a cada 3 segundos
-    
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [componentData, loading]);
-  
+
   const handleStartDateChange = (e) => {
     setTempStartDate(e.target.value);
   };
@@ -149,16 +48,6 @@ const Campanhas_ativas = () => {
     const newEndDate = tempEndDate > yesterday ? yesterday : tempEndDate;
     setStartDate(tempStartDate);
     setEndDate(newEndDate);
-    // Resetar contadores de tentativas
-    retryCountRef.current = 0;
-    forceReloadRef.current = false;
-  };
-  
-  // Função para forçar o recarregamento manual
-  const handleReload = () => {
-    retryCountRef.current = 0;
-    forceReloadRef.current = false;
-    fetchData();
   };
 
   // Renderização condicional baseada no estado
@@ -170,7 +59,7 @@ const Campanhas_ativas = () => {
     return (
       <div>
         <p>{error}</p>
-        <Button onClick={handleReload}>Tentar novamente</Button>
+        <Button onClick={fetchInitialData}>Tentar novamente</Button>
       </div>
     );
   }
@@ -206,7 +95,6 @@ const Campanhas_ativas = () => {
               id="endDate"
               value={tempEndDate}
               onChange={handleEndDateChange}
-              max={yesterday}
               className="p-2 w-100 w-sm-auto"
               style={{ border: "1px solid #e5e7eb", borderRadius: "4px", minWidth: "130px" }}
             />
@@ -221,25 +109,7 @@ const Campanhas_ativas = () => {
         </div>
       </div>
 
-      {/* Botão de recarregar que aparece apenas se detectarmos problemas */}
-      {retryCountRef.current > 0 && (
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <Button 
-            onClick={handleReload} 
-            variant="warning"
-            style={{ backgroundColor: '#ffc107', color: 'black' }}
-          >
-            Recarregar Dados
-          </Button>
-        </div>
-      )}
-
-      <Cards 
-        startDate={startDate} 
-        endDate={endDate} 
-        selectedCampaign={selectedCampaign} 
-        key={`cards-${startDate}-${endDate}-${forceReloadRef.current}`}
-      />
+      <Cards startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
       <br />
       <Row className="g-4">
         <Col xs={12} md={6} lg={2} className="d-flex align-items-stretch">
@@ -248,32 +118,16 @@ const Campanhas_ativas = () => {
             endDate={endDate}
             onCampaignSelect={setSelectedCampaign}
             selectedCampaign={selectedCampaign}
-            key={`cardCampanha-${startDate}-${endDate}-${forceReloadRef.current}`}
           />
         </Col>
         <Col xs={12} md={6} lg={8}>
-          <Veiculos_investimentos 
-            startDate={startDate} 
-            endDate={endDate} 
-            selectedCampaign={selectedCampaign}
-            key={`veiculos-${startDate}-${endDate}-${forceReloadRef.current}`}
-          />
+          <Veiculos_investimentos startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
         <Col xs={12} lg={2}>
-          <Engajamento 
-            startDate={startDate} 
-            endDate={endDate} 
-            selectedCampaign={selectedCampaign}
-            key={`engajamento-${startDate}-${endDate}-${forceReloadRef.current}`}
-          />
+          <Engajamento startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
         <Col xs={12} lg={12}>
-          <GraficoComparativo 
-            startDate={startDate} 
-            endDate={endDate} 
-            selectedCampaign={selectedCampaign}
-            key={`grafico-${startDate}-${endDate}-${forceReloadRef.current}`}
-          />
+          <GraficoComparativo startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
       </Row>
       <br />
