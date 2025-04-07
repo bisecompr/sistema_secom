@@ -112,7 +112,7 @@ const Campanhas_ativas = () => {
       <Cards startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
       <br />
       <Row className="g-4">
-        <Col xs={12} md={6} lg={2} className="d-flex align-items-stretch">
+        <Col xs={12} md={6} lg={3} className="d-flex align-items-stretch">
           <CardCampanha
             startDate={startDate}
             endDate={endDate}
@@ -120,7 +120,7 @@ const Campanhas_ativas = () => {
             selectedCampaign={selectedCampaign}
           />
         </Col>
-        <Col xs={12} md={6} lg={8}>
+        <Col xs={12} md={6} lg={7}>
           <Veiculos_investimentos startDate={startDate} endDate={endDate} selectedCampaign={selectedCampaign} />
         </Col>
         <Col xs={12} lg={2}>

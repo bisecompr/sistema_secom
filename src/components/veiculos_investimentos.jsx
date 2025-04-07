@@ -201,7 +201,7 @@ const Veiculos_investimentos = ({ startDate, endDate, selectedCampaign }) => {
       setLoading(true);
       try {
         const result = await fetchPlatformMetrics(startDate, endDate, selectedCampaign);
-        
+        console.log(result)
         const allPlatforms = [
           { platform: "Instagram", spend: 0, CPM: 0, CPV: 0, CPC: 0, CTR: 0, VTR: 0, impressions: 0 },
           { platform: "Facebook", spend: 0, CPM: 0, CPV: 0, CPC: 0, CTR: 0, VTR: 0, impressions: 0 },
