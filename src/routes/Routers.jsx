@@ -51,7 +51,6 @@ const Routers = () => {
           <Route path="/stilingue" element={<PrivateRoute />} >
             <Route path="/stilingue" element={<Stilingue />} />
           </Route>
-         
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
 
